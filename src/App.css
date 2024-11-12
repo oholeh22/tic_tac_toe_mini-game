@@ -1,0 +1,14 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 10vmin;
+}
+
+.tic-tac-toe {
+  width: 150px;
+  height: 150px;
+  border: 2px solid black;
+  margin: 50px auto;
+}
