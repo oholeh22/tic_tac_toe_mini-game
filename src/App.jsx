@@ -5,65 +5,88 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      squares : Array(9).fill(null),
-      count : 0
+      squares: Array(9).fill(null),
+      count: 0,
+      winner: null, 
+      isDraw: false 
+    };
+    this.winnerLine = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
   }
-  this.winnerLine = [
-    [0,1,2],
-    [3,4,5],
-    [6,7,8],
-    [0,3,6],
-    [1,4,7],
-    [2,5,8],
-    [0,4,8],
-    [2,4,6]
-  ]
-}
 
-isWinner = () => {
-  let s = (this.state.count % 2 === 0) ? 'X' : 'O';
-  for (let i = 0; i < 8; i++) {
-    let line = this.winnerLine[i];
-    if (this.state.squares[line[0]] === s && 
-      this.state.squares[line[1]] === s &&
-      this.state.squares[line[2]] === s
-    ) {
-      alert(s + 'win');
-      setTimeout(()=>{
-        this.setState({squares : Array(9).fill(null)});
-        this.setState({count : 0});
-      }, 3000)
+  clickHandler = (event) => {
+    const data = event.target.getAttribute('data');
+    const currentSquares = [...this.state.squares];
+
+    if (this.state.winner || this.state.isDraw || currentSquares[data]) {
+      return;
     }
-  } 
-}
 
-  clickHandler = event => {
-    let data = event.target.getAttribute('data');
-    let currentSquares = this.state.squares;
-    if (currentSquares[data] === null) {
+    currentSquares[data] = this.state.count % 2 === 0 ? 'X' : 'O';
 
+    const s = currentSquares[data];
+    let winnerFound = false;
+    for (let i = 0; i < this.winnerLine.length; i++) {
+      const [a, b, c] = this.winnerLine[i];
+      if (currentSquares[a] === s && currentSquares[b] === s && currentSquares[c] === s) {
+        winnerFound = true;
+        break;
+      }
+    }
 
-    currentSquares[data] = (this.state.count % 2 === 0) ? 'X' : 'O';
-    this.setState({ count: this.state.count + 1});
-    this.setState({ squares: currentSquares});
-  } else {
-    alert('Choise other square')
-  }
-  this.isWinner();
-  }
+    if (winnerFound) {
+      this.setState({ squares: currentSquares, winner: s });
+    } else {
+      const isDraw = !currentSquares.includes(null);
+      this.setState({ squares: currentSquares, count: this.state.count + 1, isDraw });
+    }
+  };
+
+  resetGame = () => {
+    this.setState({
+      squares: Array(9).fill(null),
+      count: 0,
+      winner: null,
+      isDraw: false
+    });
+  };
 
   render() {
     return (
-      <div className="tic-tac-toe">
-        <div className="ttt-grid" onClick={this.clickHandler} data="0">{this.state.squares[0]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="1">{this.state.squares[1]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="2">{this.state.squares[2]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="3">{this.state.squares[3]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="4">{this.state.squares[4]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="5">{this.state.squares[5]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="6">{this.state.squares[6]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="7">{this.state.squares[7]}</div>
-        <div className="ttt-grid" onClick={this.clickHandler} data="8">{this.state.squares[8]}</div>
+      
+      <div className="game-container">
+        <div className="tic-tac-toe">
+          {this.state.squares.map((value, index) => (
+            <div
+              key={index}
+              className="ttt-grid"
+              onClick={this.clickHandler}
+              data={index}
+              data-player={value}
+            >
+              {value}
+            </div>
+          ))}
+        </div>
+
+        {(this.state.winner || this.state.isDraw) && (
+          <div className="winner-message">
+            {this.state.winner ? (
+              <p>{this.state.winner} победил!</p>
+            ) : (
+              <p>Ничья!</p>
+            )}
+            <button onClick={this.resetGame} className="restart-button">Рестарт</button>
+          </div>
+        )}
       </div>
     );
   }
